@@ -51,7 +51,11 @@ def make_vid():
 
 	video_clips = []
 	for x in filename_list:
-		video_clips.append(VideoFileClip(x))
+		clip = VideoFileClip(x)
+		if clip.size() != (1280,720):
+			clip = clip.resize( (1280,720) )
+
+		video_clips.append(clip)
 
 	final_clip = concatenate_videoclips(video_clips)
 	final_clip.write_videofile("exportedvideo.mp4")
