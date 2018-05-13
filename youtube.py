@@ -44,7 +44,7 @@ def download_youtube_clip(clip_origin):
 def make_vid():
 	#code to concatenate video clips
 	#go into videos folder, iterate through file names
-	print("made it")
+	#print("made it")
 	filename_list = []
 	for filename in glob.iglob('videos/*.mp4'):
 		filename_list.append(filename)
@@ -52,7 +52,7 @@ def make_vid():
 	video_clips = []
 	for x in filename_list:
 		clip = VideoFileClip(x)
-		if clip.size() != (1280,720):
+		if clip.size != (1280,720):
 			clip = clip.resize( (1280,720) )
 
 		video_clips.append(clip)
