@@ -4,7 +4,6 @@ from datetime import datetime
 import azure.functions as func
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
-import secrets
 import praw
 import json
 
@@ -26,35 +25,41 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     
     #Authentication
-    reddit = praw.Reddit(client_id=CLIENT_ID,
-                         client_secret = CLIENT_SECRET,
-                         user_agent=USER_AGENT,
-                         redirect_uri=REDIRECT_URI,
-                         refresh_token=REFRESH_TOKEN
+    reddit = praw.Reddit(client_id=CLIENT_ID.value,
+                         client_secret = CLIENT_SECRET.value,
+                         user_agent=USER_AGENT.value,
+                         redirect_uri=REDIRECT_URI.value,
+                         refresh_token=REFRESH_TOKEN.value
                          )
 
-    subreddit = reddit.subreddit(SUBREDDITNAME)
+    subreddit = reddit.subreddit(SUBREDDIT_NAME)
 
     #Getting all top posts
     topPosts = []
     for submission in subreddit.hot(limit=50):
-        topPosts += submission
-        print(submission.title)
-
+        topPosts.append(submission.title)
     
-    name = req.params.get('name')
-    if not name:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            name = req_body.get('name')
+    topPostsDict = {}
+    for x in range(len(topPosts)):
+        topPostsDict[x] = topPosts[x]
 
-    if name:
-        return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
-    else:
-        return func.HttpResponse(
-             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-             status_code=200
-        )
+    return func.HttpResponse(json.dumps(topPostsDict))
+    
+    
+    # name = req.params.get('name')
+    # if not name:
+    #     try:
+    #         req_body = req.get_json()
+    #     except ValueError:
+    #         pass
+    #     else:
+    #         name = req_body.get('name')
+
+    # if name:
+    #     return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
+    # else:
+    #     return func.HttpResponse(
+    #          "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
+    #          status_code=200
+    #     )
+    
