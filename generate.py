@@ -6,7 +6,7 @@ import urllib
 import requests
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from reddit import *
-from youtube.py import *
+from youtube import *
 
 def make_vid():
 	#code to concatenate video clips
