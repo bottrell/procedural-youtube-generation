@@ -27,9 +27,12 @@ all_file_names = [f for f in os.listdir(upload_file_path)
 for x in all_file_names:
     path = os.path.join(upload_file_path, x)
     print(path)
+    blob_client = BLOB_SERVICE_CLIENT.get_blob_client(container="clips", blob=x)
+    #Upload the file to blob storage
     with open(path, "rb") as data:
-        blob_client = BLOB_SERVICE_CLIENT.get_blob_client(container="clips", blob=x)
-        blob_client.upload_blob(data, blob_type="PageBlob")
+        blob_client.upload_blob(data)
+    #Delete the file from local storage
+    os.remove(path)
     path = ""
 # for file in os.listdir(upload_file_path):
 #         filename = os.fsdecode(file)

@@ -8,6 +8,8 @@ from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, _
 import os
 import praw
 import json
+import unicodedata
+import re
 from CollectClipsTest.download_clips import *  
 
 #Azure Key Vault
@@ -67,32 +69,33 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             except:
                 continue
     
-    for file in os.listdir(upload_file_path):
-        filename = os.fsdecode(file)
-        print(filename)
-        output_filename = upload_file_path + filename
-        output_to_blob(output_filename, filename)
+    output_to_blob(upload_file_path)
 
     return func.HttpResponse(json.dumps(submission_dict))
     
-def output_to_blob(path, filename):
-    blob_client = BLOB_SERVICE_CLIENT.get_blob_client(container="clips", blob=filename)
-    with open(path, "rb") as data:
-        blob_client.upload_blob(data)
-    # name = req.params.get('name')
-    # if not name:
-    #     try:
-    #         req_body = req.get_json()
-    #     except ValueError:
-    #         pass
-    #     else:
-    #         name = req_body.get('name')
 
-    # if name:
-    #     return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
-    # else:
-    #     return func.HttpResponse(
-    #          "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-    #          status_code=200
-    #     )
+def output_to_blob(path):
+    #Updating file names to not include invalid characters
+    all_file_names = [f for f in os.listdir(path)
+                    if os.path.isfile(os.path.join(path, f)) and ".mp4" in f]
     
+    for name in all_file_names:
+        old_name = name
+        new_name = (((old_name.replace(" ", "")).replace("'", "")).replace("!", ""))
+        os.replace(f"{path}/{old_name}", f"{path}/{new_name}")
+
+    all_file_names = [f for f in os.listdir(path)
+                    if os.path.isfile(os.path.join(path, f)) and ".mp4" in f]
+
+    #upload to blob storage and delete from local storage
+    for x in all_file_names:
+        out_path = os.path.join(path, x)
+        print(f"uploading file:{out_path}")
+        try:
+            blob_client = BLOB_SERVICE_CLIENT.get_blob_client(container="clips", blob=x)
+            with open(out_path, "rb") as data:
+                blob_client.upload_blob(data)
+        except:
+            pass
+        os.remove(out_path)
+        out_path = ""
