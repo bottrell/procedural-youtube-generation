@@ -1,6 +1,6 @@
 from distutils.command.upload import upload
 import imageio
-imageio.plugins.ffmpeg.download()
+#imageio.plugins.ffmpeg.download()
 import pathlib
 import logging
 from xmlrpc.client import DateTime
@@ -35,6 +35,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     download_all_files_from_blob(upload_file_path)
     compile_clips_to_video(file_path)
     output_to_blob(output_file_path)
+    remove_local_videos(upload_file_path)
 
     return func.HttpResponse(f"successfully downloaded videos")
 
@@ -87,3 +88,14 @@ def output_to_blob(path):
     except:
         pass
     os.remove(path)
+
+def remove_local_videos(path):
+    all_file_names = [f for f in os.listdir(path)
+                    if os.path.isfile(os.path.join(path, f)) and ".mp4" in f]
+
+    #remove all local videos
+    filename_list = []
+    for x in all_file_names:
+        out_path = os.path.join(path, x)
+        print(f"removing local file:{out_path}")
+        os.remove(out_path)
