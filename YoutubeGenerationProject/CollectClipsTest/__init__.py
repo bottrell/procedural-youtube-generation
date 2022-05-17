@@ -1,3 +1,6 @@
+import imageio
+imageio.plugins.ffmpeg.download()
+import pathlib
 import logging
 from xmlrpc.client import DateTime
 from datetime import datetime
@@ -10,11 +13,12 @@ import praw
 import json
 import unicodedata
 import re
+import tempfile
 from CollectClipsTest.download_clips import *  
 
 #Azure Key Vault
 KEY_VAULT_URI = "https://kv-jjb-prod-use2.vault.azure.net/"
-credential = DefaultAzureCredential()
+credential = DefaultAzureCredential(managed_identity_client_id="725a00b2-ea8b-4791-8244-6929992e9858")
 client = SecretClient(vault_url=KEY_VAULT_URI, credential=credential)
 
 #Azure Blob Storage
@@ -32,6 +36,7 @@ REFRESH_TOKEN = client.get_secret("praw-refresh-token").value
 
 #Main
 def main(req: func.HttpRequest) -> func.HttpResponse:
+
     logging.info(f"Collecting top 5 reddit clips at {datetime.now()}")
 
     
@@ -55,7 +60,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     for x in range(len(submission_list)):
         submission_dict[x] = submission_list[x]
     
-    upload_file_path = f'CollectClipsTest/downloadedfiles/'
+    upload_file_path = tempfile.gettempdir() + "/downloadedfiles/"
     #download any twitch clips to blob storage
     for clipname in submission_list:
         if ("youtu" in clipname):
