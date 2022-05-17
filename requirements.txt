@@ -13,4 +13,4 @@ pytube==9.2.2
 requests==2.18.4
 tqdm==4.23.2
 update-checker==0.16
-urllib3==1.22
+urllib3==1.26.5
